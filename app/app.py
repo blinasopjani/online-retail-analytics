@@ -134,10 +134,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption("Online Retail Analytics Platform")
-<<<<<<< HEAD
-=======
     
->>>>>>> bbab0b2 (Reorganize app into 3 pages and comment out unused imports)
 
 
 # ══════════════════════════════════════════════════════════════════════
