@@ -21,7 +21,8 @@ online-retail-analytics/
 │   ├── analysis.py               # EDA functions & KPI generation
 │   ├── data_cleaning.py          # Data cleaning logic (clean_data)
 │   ├── recommendation_engine.py  # RFM and Recommendation rule-engine
-│   └── visualisations.py         # Plotly chart generation functions
+│   ├── visualisations.py         # Plotly chart generation functions
+│   └── export_utils.py           # Multi-sheet Excel report generator
 ├── app/
 │   └── app.py                    # Streamlit Dashboard Application
 ├── docs/                         # Project planning documents
