@@ -524,8 +524,7 @@ elif page == ":material/insights: Insights & Actions":
         base_revenue = kpis.get('total_revenue', 0)
 
         st.markdown(
-            "Adjust the sliders below to simulate the revenue impact of business actions. "
-            "*(Logic will be fully implemented in Step 5.1)*"
+            "Adjust the sliders below to simulate the revenue impact of business actions."
         )
 
         st.markdown("---")
