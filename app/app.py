@@ -491,14 +491,20 @@ elif page == ":material/insights: Insights & Actions":
                     continue
 
                 css_class = rec['priority'].lower()
-                priority_emoji = {"High": ":material/error:", "Medium": ":material/warning:", "Low": ":material/check_circle:"}[rec['priority']]
+                svgs = {
+                    "High": '<svg style="vertical-align: middle; margin-right: 4px;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E71D36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+                    "Medium": '<svg style="vertical-align: middle; margin-right: 4px;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F7931E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+                    "Low": '<svg style="vertical-align: middle; margin-right: 4px;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2EC4B6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+                }
+                priority_svg = svgs.get(rec['priority'], '')
+                trending_up_svg = '<svg style="vertical-align: middle; margin-right: 4px;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>'
 
                 st.markdown(f'''
 <div class="rec-card {css_class}">
-  <strong>{priority_emoji} {rec['title']}</strong>
+  <strong>{priority_svg} {rec['title']}</strong>
   &nbsp;&nbsp;<span style="color:#8D99AE; font-size:0.85rem">{rec['type']} &middot; {rec['segment']}</span><br><br>
   {rec['message']}<br><br>
-  <span style="color:#6C63FF; font-weight:600">:material/trending_up: Estimated impact: ~+{rec['impact_pct']}% profit improvement</span>
+  <span style="color:#6C63FF; font-weight:600">{trending_up_svg} Estimated impact: ~+{rec['impact_pct']}% profit improvement</span>
 </div>
 ''', unsafe_allow_html=True)
 
@@ -540,7 +546,7 @@ elif page == ":material/insights: Insights & Actions":
                 format="%d%%", help="% reduction in return transaction losses"
             )
             new_customer_growth = st.slider(
-                "🆕 Increase new customer acquisition", 0, 30, 5, step=1,
+                ":material/person_add: Increase new customer acquisition", 0, 30, 5, step=1,
                 format="%d%%", help="% more new customers per month"
             )
 
