@@ -1,29 +1,31 @@
 # Online Retail Analytics Platform
 
-Platformë analitike për të dhëna të shitjeve retail — bazuar në datasetin
-[Online Retail II (UCI)](https://archive.ics.uci.edu/dataset/502/online+retail+ii).
+Analytics platform for retail sales data — based on the [Online Retail II (UCI)](https://archive.ics.uci.edu/dataset/502/online+retail+ii) dataset.
 
-Për planin e plotë të projektit dhe ndarjen e punës, shih dokumentet në `docs/`.
+For the full project plan and task distribution, see the documents in `docs/`.
 
-## Struktura e projektit
+## Project Structure
 
-```
+```text
 online-retail-analytics/
 ├── data/
-│   ├── raw/            # CSV/Excel origjinale, të pangarkuara në git (shih .gitignore)
-│   └── processed/      # Dataset i pastruar (output i clean_data())
+│   ├── raw/                      # Original CSV/Excel (gitignored)
+│   ├── processed/                # Cleaned datasets directory
+│   └── cleaned_retail_data.csv   # Demo dataset for Streamlit
 ├── notebooks/
-│   └── 01_data_exploration.ipynb   # Eksplorimi fillestar (Hapi 1.1)
+│   ├── 01_data_exploration.ipynb    # Initial data exploration
+│   ├── 02_eda_analysis.ipynb        # EDA & Insights
+│   ├── 03_rfm_recommendations.ipynb # RFM Segmentation & Rules
+│   └── 04_visualisations.ipynb      # Charting and plotting examples
 ├── src/
-│   ├── data_cleaning.py            # clean_data(df) -> df_clean  (Hapi 1.2)
-│   ├── analysis.py                 # Funksionet e EDA-s (Hapi 2.1)
-│   ├── recommendation_engine.py    # generate_recommendations(df) (Hapi 2.2)
-│   └── db_connector.py             # Lidhja me MongoDB (Hapi 4.1)
+│   ├── analysis.py               # EDA functions & KPI generation
+│   ├── data_cleaning.py          # Data cleaning logic (clean_data)
+│   ├── recommendation_engine.py  # RFM and Recommendation rule-engine
+│   └── visualisations.py         # Plotly chart generation functions
 ├── app/
-│   └── app.py                      # Aplikacioni Streamlit (Faza 3)
-├── docs/                           # Planet e projektit
-├── tests/                          # Testet
-├── requirements.txt
+│   └── app.py                    # Streamlit Dashboard Application
+├── docs/                         # Project planning documents
+├── requirements.txt              # Python dependencies
 └── README.md
 ```
 
@@ -31,33 +33,65 @@ online-retail-analytics/
 
 ```bash
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+# On Mac/Linux: source venv/bin/activate
+# On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Përdorimi
+## Usage
 
-**Notebook fillestar:**
+**Running Notebooks:**
 ```bash
-jupyter notebook notebooks/01_data_exploration.ipynb
+jupyter notebook notebooks/
 ```
 
-**Aplikacioni Streamlit** (kur të jetë ndërtuar, Faza 3):
+**Running the Streamlit App:**
 ```bash
 streamlit run app/app.py
 ```
 
 ## Dataset
 
-Dataseti "Online Retail II" nga UCI ngarkohet automatikisht online gjatë ekzekutimit të skripteve dhe notebooks, duke mos pasur nevojë të shkarkohet manualisht në dosjen `data/raw/`.
-Burimi: https://archive.ics.uci.edu/dataset/502/online+retail+ii
+The "Online Retail II" dataset from UCI is loaded automatically during the execution of scripts and notebooks, and a cleaned version is provided in `data/cleaned_retail_data.csv`. 
+Source: https://archive.ics.uci.edu/dataset/502/online+retail+ii
 
-## Statusi aktual
+---
 
-- [x] Struktura bazë e repos
-- [ ] Hapi 1.1 — Eksplorimi fillestar i datasetit (Dev A)
-- [ ] Hapi 1.2 — `clean_data()` (Dev A)
-- [ ] Hapi 2.1 — EDA (Dev B)
-- [ ] Hapi 2.2 — RFM + Motori i Rekomandimeve (Dev B)
-- [ ] Faza 3 — Aplikacioni Streamlit (Dev C)
-- [ ] Faza 4 — MongoDB (Dev D)
+## Current Status (What has been done)
+
+- [x] Basic repository structure setup and dependency management.
+- [x] **Phase 1: Data Processing**
+  - Completed initial dataset exploration and cleaning.
+  - Implemented the reusable `clean_data()` function in `src/`.
+- [x] **Phase 2: Analytics & Insights**
+  - Developed EDA functions (revenue, products, geography).
+  - Built RFM logic and a Business Recommendation Engine.
+  - Created interactive Plotly visualisations.
+  - Documented everything in Jupyter Notebooks.
+- [x] **Phase 3: Streamlit Application**
+  - Built a complete, premium Streamlit dashboard with 6 distinct views:
+    - **Home & Upload:** Supports raw and pre-cleaned data validation.
+    - **Sales Dashboard:** KPIs, revenue trends, product performance.
+    - **Customer Analysis:** RFM segments, CLV, churn risk.
+    - **Geographic Performance:** Country-based revenue mapping.
+    - **Recommendations:** Rule-based insights with profit impact.
+    - **What-If Simulator:** Basic structure for revenue projections.
+- [x] Cleaned up unused files and updated requirements for production.
+- [x] Ready for deployment on Streamlit Cloud.
+
+---
+
+## What's Left (Next Steps)
+
+- [ ] **Phase 4: Database Integration (MongoDB)**
+  - Implement a `db_connector.py` for MongoDB.
+  - Store uploaded datasets in `raw_uploads`.
+  - Log monthly analysis runs to `monthly_analytics`.
+  - Log generated recommendations to `recommendations_log`.
+  - Track historical KPIs in `kpi_history`.
+- [ ] **Phase 5.1: Advanced What-If Simulator**
+  - Connect the What-If Simulator in Streamlit directly to the full RFM history and historical KPIs (from MongoDB) for accurate, data-driven projections.
+- [ ] **Phase 5.2: Export Features**
+  - Add PDF and Excel export functionalities for reports directly from the Streamlit app.
+- [ ] **Phase 6: Automated Testing**
+  - Add unit tests for the core logic in the `src/` directory (data cleaning, RFM, recommendation engine).
