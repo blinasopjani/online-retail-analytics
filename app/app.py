@@ -27,6 +27,7 @@ from src.analysis import (
     get_churned_customers, get_return_summary,
 )
 from src.recommendation_engine import compute_rfm, get_segment_summary, generate_recommendations
+from src.export_utils import generate_excel_report
 from src.visualisations import (
     plot_monthly_revenue, plot_revenue_by_hour, plot_revenue_by_day_of_week,
     plot_top_products, plot_product_return_rates,
@@ -553,13 +554,34 @@ elif page == ":material/insights: Insights & Actions":
         with col2:
             st.markdown("#### :material/lightbulb: Projected Impact")
 
-            # Simple projection formulas (Dev B will implement full logic in Step 5.1)
+            # Advanced projection formulas (Phase 5.1 - Local RFM based)
+            rfm = compute_rfm(df)
+            
+            # Exact segment contributions
+            champions_revenue = rfm[rfm['Segment'] == 'Champions']['Monetary'].sum() if not rfm.empty else 0
+            loyal_revenue = rfm[rfm['Segment'] == 'Loyal Customers']['Monetary'].sum() if not rfm.empty else 0
+            vip_revenue = champions_revenue + loyal_revenue
+            
+            at_risk_revenue = rfm[rfm['Segment'] == 'At Risk']['Monetary'].sum() if not rfm.empty else 0
+            recent_revenue = rfm[rfm['Segment'] == 'Recent Customers']['Monetary'].sum() if not rfm.empty else 0
+            
+            # Fallbacks in case segment is empty but overall base_revenue is positive
+            if vip_revenue == 0 and base_revenue > 0:
+                vip_revenue = base_revenue * 0.30
+            if at_risk_revenue == 0 and base_revenue > 0:
+                at_risk_revenue = base_revenue * 0.10
+            if recent_revenue == 0 and base_revenue > 0:
+                recent_revenue = base_revenue * 0.05
+
             ret_summary = get_return_summary(df)
-            revenue_from_vip    = base_revenue * (vip_retention / 100) * 0.30  # champions ~30%
-            revenue_from_winback = base_revenue * (winback_rate / 100) * 0.10
-            revenue_from_returns = ret_summary.get('revenue_lost_from_returns', 0) * (return_reduction / 100)
-            revenue_from_new    = base_revenue * (new_customer_growth / 100) * 0.05
-            total_uplift        = revenue_from_vip + revenue_from_winback + revenue_from_returns + revenue_from_new
+            revenue_lost_returns = ret_summary.get('revenue_lost_from_returns', 0)
+            
+            # Simulated gains
+            revenue_from_vip     = vip_revenue * (vip_retention / 100)
+            revenue_from_winback = at_risk_revenue * (winback_rate / 100)
+            revenue_from_returns = revenue_lost_returns * (return_reduction / 100)
+            revenue_from_new     = recent_revenue * (new_customer_growth / 100)
+            total_uplift         = revenue_from_vip + revenue_from_winback + revenue_from_returns + revenue_from_new
 
             st.metric("Base Revenue", f"£{base_revenue:,.0f}")
             st.metric("VIP Retention Uplift", f"+£{revenue_from_vip:,.0f}")
@@ -573,7 +595,36 @@ elif page == ":material/insights: Insights & Actions":
                       if base_revenue > 0 else None)
 
         st.caption(
-            ":material/warning: These are simplified estimates. Step 5.1 will connect these to the full "
-            "RFM history and `kpi_history` MongoDB collection for accurate projections."
+            ":material/check_circle: These projections are dynamically calculated using the RFM segment distributions "
+            "of the currently loaded retail dataset."
+        )
+
+        # ── Excel Export (Phase 5.2) ────────────────────────────────
+        st.markdown("---")
+        st.markdown("### :material/download: Export Full Report")
+        st.markdown("Download a comprehensive Excel report including KPIs, customer segments, and recommendations.")
+
+        kpis_export = get_kpi_summary(df)
+        recs_export = generate_recommendations(df)
+        projections_export = {
+            "vip_retention_pct": vip_retention,
+            "winback_rate_pct": winback_rate,
+            "return_reduction_pct": return_reduction,
+            "new_customer_growth_pct": new_customer_growth,
+            "base_revenue": base_revenue,
+            "revenue_from_vip": revenue_from_vip,
+            "revenue_from_winback": revenue_from_winback,
+            "revenue_from_returns": revenue_from_returns,
+            "revenue_from_new": revenue_from_new,
+            "total_uplift": total_uplift,
+            "projected_revenue": base_revenue + total_uplift,
+        }
+
+        excel_bytes = generate_excel_report(df, kpis_export, recs_export, projections_export)
+        st.download_button(
+            ":material/download: Download Excel Report",
+            data=excel_bytes,
+            file_name="retail_analytics_report.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
