@@ -75,23 +75,12 @@ Source: https://archive.ics.uci.edu/dataset/502/online+retail+ii
     - **Customer Analysis:** RFM segments, CLV, churn risk.
     - **Geographic Performance:** Country-based revenue mapping.
     - **Recommendations:** Rule-based insights with profit impact.
-    - **What-If Simulator:** Basic structure for revenue projections.
-- [x] Cleaned up unused files and updated requirements for production.
+    - **What-If Simulator:** Data-driven revenue projections using RFM segments.
+- [x] **Phase 5.1: Advanced What-If Simulator**
+  - Simulator now uses exact RFM segment revenue data (Champions, At Risk, etc.) for projections.
+- [x] **Phase 5.2: Excel Export**
+  - Multi-sheet Excel report (Executive Summary, Customer Segments, Recommendations) downloadable from the app.
+- [x] **Phase 6: Automated Testing**
+  - 29 unit tests covering data cleaning, KPI calculation, RFM segmentation, and recommendation generation (all passing).
+- [x] Cleaned up unused files, replaced emojis with professional Material Icons, and updated requirements.
 - [x] Ready for deployment on Streamlit Cloud.
-
----
-
-## What's Left (Next Steps)
-
-- [ ] **Phase 4: Database Integration (MongoDB)**
-  - Implement a `db_connector.py` for MongoDB.
-  - Store uploaded datasets in `raw_uploads`.
-  - Log monthly analysis runs to `monthly_analytics`.
-  - Log generated recommendations to `recommendations_log`.
-  - Track historical KPIs in `kpi_history`.
-- [ ] **Phase 5.1: Advanced What-If Simulator**
-  - Connect the What-If Simulator in Streamlit directly to the full RFM history and historical KPIs (from MongoDB) for accurate, data-driven projections.
-- [ ] **Phase 5.2: Export Features**
-  - Add PDF and Excel export functionalities for reports directly from the Streamlit app.
-- [ ] **Phase 6: Automated Testing**
-  - Add unit tests for the core logic in the `src/` directory (data cleaning, RFM, recommendation engine).
