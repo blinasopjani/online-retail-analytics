@@ -12,7 +12,6 @@ venv/
 # Data (mos ngarko dataset e mëdha në git)
 data/raw/*
 data/processed/*
-data/cleaned_retail_data.csv
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
