@@ -80,17 +80,21 @@ html, body, [class*="css"] {
     transition: transform 0.2s ease;
 }
 [data-testid="metric-container"]:hover { transform: translateY(-2px); }
-[data-testid="stMetricValue"]  { 
+[data-testid="stMetricValue"], [data-testid="stMetricValue"] > div { 
     color: #6C63FF !important; 
     font-size: 1.8rem !important; 
     word-wrap: break-word !important;
     white-space: normal !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
 }
-[data-testid="stMetricLabel"]  { 
+[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] > div { 
     color: #8D99AE !important; 
     font-size: 0.85rem !important; 
     word-wrap: break-word !important;
     white-space: normal !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
 }
 
 /* Section headers */
