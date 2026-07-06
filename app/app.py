@@ -16,18 +16,18 @@ import pandas as pd
 import streamlit as st
 
 # ── Path setup ─────────────────────────────────────────────────────────
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from data_cleaning import clean_data
-from analysis import (
+from src.data_cleaning import clean_data
+from src.analysis import (
     get_kpi_summary, get_monthly_revenue, get_revenue_by_hour,
     get_revenue_by_day_of_week, get_top_products, get_worst_products,
     get_product_return_rate, get_country_performance,
     get_customer_lifetime_value, get_new_vs_returning_customers,
     get_churned_customers, get_return_summary,
 )
-from recommendation_engine import compute_rfm, get_segment_summary, generate_recommendations
-from visualisations import (
+from src.recommendation_engine import compute_rfm, get_segment_summary, generate_recommendations
+from src.visualisations import (
     plot_monthly_revenue, plot_revenue_by_hour, plot_revenue_by_day_of_week,
     plot_top_products, plot_product_return_rates,
     plot_rfm_segments, plot_segment_revenue_share, plot_clv_distribution,
