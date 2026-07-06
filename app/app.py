@@ -135,7 +135,6 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption("Online Retail Analytics Platform")
-    st.caption("Built with Streamlit + Plotly")
 
 
 # ══════════════════════════════════════════════════════════════════════
