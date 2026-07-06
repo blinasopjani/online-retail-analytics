@@ -80,12 +80,22 @@ html, body, [class*="css"] {
     transition: transform 0.2s ease;
 }
 [data-testid="metric-container"]:hover { transform: translateY(-2px); }
-[data-testid="stMetricValue"]  { color: #6C63FF !important; font-size: 1.8rem !important; }
-[data-testid="stMetricLabel"]  { color: #8D99AE !important; font-size: 0.85rem !important; }
+[data-testid="stMetricValue"]  { 
+    color: #6C63FF !important; 
+    font-size: 1.8rem !important; 
+    word-wrap: break-word !important;
+    white-space: normal !important;
+}
+[data-testid="stMetricLabel"]  { 
+    color: #8D99AE !important; 
+    font-size: 0.85rem !important; 
+    word-wrap: break-word !important;
+    white-space: normal !important;
+}
 
 /* Section headers */
-h2 { color: #6C63FF; border-bottom: 1px solid #2A2D3E; padding-bottom: 0.4rem; }
-h3 { color: #EAEAEA; }
+h2 { color: #6C63FF; border-bottom: 1px solid #2A2D3E; padding-bottom: 0.4rem; word-wrap: break-word; }
+h3 { color: #EAEAEA; word-wrap: break-word; }
 
 /* Upload area */
 [data-testid="stFileUploader"] {
@@ -96,11 +106,11 @@ h3 { color: #EAEAEA; }
 }
 
 /* Info / warning / success boxes */
-.stAlert { border-radius: 10px; }
+.stAlert { border-radius: 10px; word-wrap: break-word; }
 
 /* Tabs */
-.stTabs [data-baseweb="tab-list"] { background: #1E2130; border-radius: 10px; }
-.stTabs [data-baseweb="tab"]      { color: #8D99AE; }
+.stTabs [data-baseweb="tab-list"] { background: #1E2130; border-radius: 10px; flex-wrap: wrap; }
+.stTabs [data-baseweb="tab"]      { color: #8D99AE; white-space: normal; text-align: center; }
 .stTabs [aria-selected="true"]    { color: #6C63FF !important; font-weight: 600; }
 
 /* Recommendation cards */
@@ -110,6 +120,9 @@ h3 { color: #EAEAEA; }
     border-radius: 10px;
     padding: 1rem 1.2rem;
     margin-bottom: 1rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 .rec-card.high   { border-left-color: #E71D36; }
 .rec-card.medium { border-left-color: #F7931E; }
