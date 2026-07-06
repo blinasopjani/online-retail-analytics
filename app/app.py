@@ -48,7 +48,7 @@ COLUMN_ALIASES = {
 # ── Page config ────────────────────────────────────────────────────────
 st.set_page_config(
     page_title='Retail Analytics Platform',
-    page_icon='📊',
+    page_icon='💼',
     layout='wide',
     initial_sidebar_state='expanded',
 )
@@ -142,12 +142,12 @@ h3 { color: #EAEAEA; word-wrap: break-word; }
 # ══════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("## 📊 Retail Analytics")
+    st.markdown("## :material/analytics: Retail Analytics")
     st.markdown("---")
 
     page = st.radio(
         "Navigate",
-        ["🏠 Data & Upload", "📊 Analytics Dashboard", "🚀 Insights & Actions"],
+        [":material/home: Data & Upload", ":material/analytics: Analytics Dashboard", ":material/insights: Insights & Actions"],
         label_visibility='collapsed',
     )
 
@@ -204,13 +204,13 @@ def load_and_clean(uploaded_file) -> pd.DataFrame | None:
     try:
         df_raw = pd.read_csv(uploaded_file, parse_dates=['InvoiceDate'])
     except Exception as e:
-        st.error(f"❌ Could not read file: {e}")
+        st.error(f":material/cancel: Could not read file: {e}")
         return None
 
     ok, missing = validate_columns(df_raw)
     if not ok:
         st.error(
-            f"❌ **Invalid file format.** Missing required columns: `{', '.join(missing)}`\n\n"
+            f":material/cancel: **Invalid file format.** Missing required columns: `{', '.join(missing)}`\n\n"
             "Expected columns: `Invoice, StockCode, Description, Quantity, "
             "InvoiceDate, Price (or UnitPrice), Customer ID (or CustomerID), Country`"
         )
@@ -224,7 +224,7 @@ def load_and_clean(uploaded_file) -> pd.DataFrame | None:
     if 'Price' in df_raw.columns and 'UnitPrice' not in df_raw.columns:
         df_raw = df_raw.rename(columns={'Price': 'UnitPrice'})
 
-    with st.spinner("🧹 Cleaning data..."):
+    with st.spinner(":material/mop: Cleaning data..."):
         df_clean = clean_data(df_raw)
 
     return df_clean
@@ -233,7 +233,7 @@ def load_and_clean(uploaded_file) -> pd.DataFrame | None:
 def require_data() -> bool:
     """Show a prompt if no data is loaded yet. Returns True if data is ready."""
     if st.session_state['df_clean'] is None:
-        st.info("📂 Please upload a CSV file on the **🏠 Data & Upload** page first.")
+        st.info(":material/folder_open: Please upload a CSV file on the **:material/home: Data & Upload** page first.")
         return False
     return True
 
@@ -242,8 +242,8 @@ def require_data() -> bool:
 # PAGE: DATA & UPLOAD
 # ══════════════════════════════════════════════════════════════════════
 
-if page == "🏠 Data & Upload":
-    st.title("📊 Online Retail Analytics Platform")
+if page == ":material/home: Data & Upload":
+    st.title(":material/analytics: Online Retail Analytics Platform")
     st.markdown(
         "Upload your monthly sales CSV and the platform will automatically "
         "clean, analyse, and generate business recommendations."
@@ -269,9 +269,9 @@ if page == "🏠 Data & Upload":
                     df = pd.read_csv(default_path, parse_dates=['InvoiceDate'])
                     st.session_state['df_clean'] = df
                     st.session_state['filename'] = 'cleaned_retail_data.csv'
-                st.success("✅ Local default dataset loaded successfully!")
+                st.success(":material/check_circle: Local default dataset loaded successfully!")
             else:
-                st.error("❌ `cleaned_retail_data.csv` not found in `data/`. Please run `01_data_exploration.ipynb` first.")
+                st.error(":material/cancel: `cleaned_retail_data.csv` not found in `data/`. Please run `01_data_exploration.ipynb` first.")
 
         if uploaded:
             df = load_and_clean(uploaded)
@@ -279,7 +279,7 @@ if page == "🏠 Data & Upload":
                 st.session_state['df_clean'] = df
                 st.session_state['filename'] = uploaded.name
                 st.success(
-                    f"✅ **{uploaded.name}** loaded successfully — "
+                    f":material/check_circle: **{uploaded.name}** loaded successfully — "
                     f"**{len(df):,}** rows after cleaning."
                 )
 
@@ -301,7 +301,7 @@ if page == "🏠 Data & Upload":
     # Show currently loaded file
     if st.session_state['df_clean'] is not None:
         st.markdown("---")
-        st.markdown(f"### 📁 Currently loaded: `{st.session_state['filename']}`")
+        st.markdown(f"### :material/folder: Currently loaded: `{st.session_state['filename']}`")
         df = st.session_state['df_clean']
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Rows (after cleaning)", f"{len(df):,}")
@@ -320,8 +320,8 @@ if page == "🏠 Data & Upload":
 # PAGE: ANALYTICS DASHBOARD
 # ══════════════════════════════════════════════════════════════════════
 
-elif page == "📊 Analytics Dashboard":
-    st.title("📊 Analytics Dashboard")
+elif page == ":material/analytics: Analytics Dashboard":
+    st.title(":material/analytics: Analytics Dashboard")
     if not require_data():
         st.stop()
 
@@ -339,7 +339,7 @@ elif page == "📊 Analytics Dashboard":
 
     # ── Tabs ────────────────────────────────────────────────────────
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📅 Revenue Trends", "📦 Products", "📊 Returns", "👥 Customers", "🌍 Geographic"
+        ":material/calendar_month: Revenue Trends", ":material/inventory_2: Products", ":material/analytics: Returns", ":material/group: Customers", ":material/public: Geographic"
     ])
 
     with tab1:
@@ -363,7 +363,7 @@ elif page == "📊 Analytics Dashboard":
         with c2:
             worst = get_worst_products(df, n=10)
             st.plotly_chart(plot_top_products(worst, n=10), use_container_width=True)
-            st.caption("⬆ Worst-selling products — consider repricing or discontinuation")
+            st.caption(":material/arrow_upward: Worst-selling products — consider repricing or discontinuation")
 
     with tab3:
         ret_summary = get_return_summary(df)
@@ -400,7 +400,7 @@ elif page == "📊 Analytics Dashboard":
         st.markdown("---")
         
         # Sub-tabs for more details
-        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["💰 CLV", "🔄 New vs Returning", "⚠️ Churn Risk"])
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs([":material/attach_money: CLV", ":material/autorenew: New vs Returning", ":material/warning: Churn Risk"])
         
         with sub_tab1:
             clv = get_customer_lifetime_value(df)
@@ -408,7 +408,7 @@ elif page == "📊 Analytics Dashboard":
             if not clv.empty:
                 top10_pct = clv.head(max(1, int(len(clv) * 0.1)))
                 rev_share = top10_pct['TotalRevenue'].sum() / clv['TotalRevenue'].sum() * 100
-                st.info(f"🏆 Top 10% of customers generate **{rev_share:.1f}%** of total revenue")
+                st.info(f":material/emoji_events: Top 10% of customers generate **{rev_share:.1f}%** of total revenue")
             with st.expander("Full CLV table"):
                 st.dataframe(clv.head(100), use_container_width=True)
                 
@@ -424,7 +424,7 @@ elif page == "📊 Analytics Dashboard":
                 st.dataframe(churned.head(50), use_container_width=True)
                 csv_export = churned.to_csv(index=False).encode()
                 st.download_button(
-                    "⬇ Download churn list (CSV)",
+                    ":material/download: Download churn list (CSV)",
                     data=csv_export,
                     file_name=f"churn_risk_{days}days.csv",
                     mime="text/csv",
@@ -452,14 +452,14 @@ elif page == "📊 Analytics Dashboard":
 # PAGE: INSIGHTS & ACTIONS
 # ══════════════════════════════════════════════════════════════════════
 
-elif page == "🚀 Insights & Actions":
-    st.title("🚀 Insights & Actions")
+elif page == ":material/insights: Insights & Actions":
+    st.title(":material/insights: Insights & Actions")
     if not require_data():
         st.stop()
 
     df = st.session_state['df_clean']
 
-    action_tab1, action_tab2 = st.tabs(["🔁 Recommendations", "🔮 What-If Simulator"])
+    action_tab1, action_tab2 = st.tabs([":material/lightbulb: Recommendations", ":material/psychology: What-If Simulator"])
 
     with action_tab1:
         with st.spinner("Generating recommendations..."):
@@ -475,9 +475,9 @@ elif page == "🚀 Insights & Actions":
 
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("Total Recommendations", str(len(recs)))
-            c2.metric("🔴 High Priority", str(len(high)))
-            c3.metric("🟠 Medium Priority", str(len(medium)))
-            c4.metric("🟢 Low Priority", str(len(low)))
+            c2.metric(":material/error: High Priority", str(len(high)))
+            c3.metric(":material/warning: Medium Priority", str(len(medium)))
+            c4.metric(":material/check_circle: Low Priority", str(len(low)))
 
             st.markdown("---")
 
@@ -491,14 +491,14 @@ elif page == "🚀 Insights & Actions":
                     continue
 
                 css_class = rec['priority'].lower()
-                priority_emoji = {"High": "🔴", "Medium": "🟠", "Low": "🟢"}[rec['priority']]
+                priority_emoji = {"High": ":material/error:", "Medium": ":material/warning:", "Low": ":material/check_circle:"}[rec['priority']]
 
                 st.markdown(f'''
 <div class="rec-card {css_class}">
   <strong>{priority_emoji} {rec['title']}</strong>
   &nbsp;&nbsp;<span style="color:#8D99AE; font-size:0.85rem">{rec['type']} &middot; {rec['segment']}</span><br><br>
   {rec['message']}<br><br>
-  <span style="color:#6C63FF; font-weight:600">📈 Estimated impact: ~+{rec['impact_pct']}% profit improvement</span>
+  <span style="color:#6C63FF; font-weight:600">:material/trending_up: Estimated impact: ~+{rec['impact_pct']}% profit improvement</span>
 </div>
 ''', unsafe_allow_html=True)
 
@@ -506,7 +506,7 @@ elif page == "🚀 Insights & Actions":
             st.markdown("---")
             rec_df = pd.DataFrame(recs)
             st.download_button(
-                "⬇ Export Recommendations (CSV)",
+                ":material/download: Export Recommendations (CSV)",
                 data=rec_df.to_csv(index=False).encode(),
                 file_name="recommendations.csv",
                 mime="text/csv",
@@ -526,17 +526,17 @@ elif page == "🚀 Insights & Actions":
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("#### 📊 Your Assumptions")
+            st.markdown("#### :material/analytics: Your Assumptions")
             vip_retention = st.slider(
-                "🏆 Improve VIP customer retention by", 0, 30, 10, step=1,
+                ":material/emoji_events: Improve VIP customer retention by", 0, 30, 10, step=1,
                 format="%d%%", help="% increase in repeat purchases from Champion segment"
             )
             winback_rate = st.slider(
-                "🔄 Win back At-Risk customers", 0, 50, 20, step=5,
+                ":material/autorenew: Win back At-Risk customers", 0, 50, 20, step=5,
                 format="%d%%", help="% of at-risk customers you re-engage"
             )
             return_reduction = st.slider(
-                "📦 Reduce product returns by", 0, 50, 15, step=5,
+                ":material/inventory_2: Reduce product returns by", 0, 50, 15, step=5,
                 format="%d%%", help="% reduction in return transaction losses"
             )
             new_customer_growth = st.slider(
@@ -545,7 +545,7 @@ elif page == "🚀 Insights & Actions":
             )
 
         with col2:
-            st.markdown("#### 💡 Projected Impact")
+            st.markdown("#### :material/lightbulb: Projected Impact")
 
             # Simple projection formulas (Dev B will implement full logic in Step 5.1)
             ret_summary = get_return_summary(df)
@@ -561,13 +561,13 @@ elif page == "🚀 Insights & Actions":
             st.metric("Returns Savings", f"+£{revenue_from_returns:,.0f}")
             st.metric("New Customer Revenue", f"+£{revenue_from_new:,.0f}")
             st.markdown("---")
-            st.metric("🎯 Projected Total Revenue",
+            st.metric(":material/track_changes: Projected Total Revenue",
                       f"£{base_revenue + total_uplift:,.0f}",
                       delta=f"+£{total_uplift:,.0f} (+{total_uplift/base_revenue*100:.1f}%)"
                       if base_revenue > 0 else None)
 
         st.caption(
-            "⚠️ These are simplified estimates. Step 5.1 will connect these to the full "
+            ":material/warning: These are simplified estimates. Step 5.1 will connect these to the full "
             "RFM history and `kpi_history` MongoDB collection for accurate projections."
         )
 
