@@ -1,12 +1,12 @@
 """
-Hapi 1.2 — Pastrimi dhe standardizimi i të dhënave (Dev A).
+Step 1.2 — Data Cleaning and Standardization (Dev A).
 
-Ky funksion do të përdoret dy herë:
-1. Nga Dev B për EDA (notebook 02).
-2. Nga Dev C brenda Streamlit-it, për çdo CSV të ri që klienti ngarkon.
+This function will be used twice:
+1. By Dev B for EDA (notebook 02).
+2. By Dev C within Streamlit, for every new CSV uploaded by the client.
 
-Prandaj duhet të mbetet një funksion i pastër, pa side-effects (nuk printon,
-nuk lexon skedarë vetë — merr DataFrame, kthen DataFrame).
+Therefore, it must remain a pure function without side-effects (no printing,
+no reading files on its own — it takes a DataFrame, returns a DataFrame).
 """
 
 import pandas as pd
@@ -14,27 +14,54 @@ import pandas as pd
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Pastron datasetin "Online Retail II".
+    Cleans the "Online Retail II" dataset.
 
-    Hapat (për t'u implementuar):
-    - Trajtimi i CustomerID mungesë (p.sh. shënim si "Guest").
-    - Klasifikimi i Quantity negative si kthime/refunds (jo fshirje verbër).
-    - Filtrimi/analiza e UnitPrice <= 0.
-    - Konvertimi i InvoiceDate në datetime.
-    - Krijimi i kolonës Revenue = Quantity * UnitPrice.
+    Steps applied:
+    - Handle missing CustomerID (mark as "Guest").
+    - Classify negative Quantity as returns/refunds (IsReturn column).
+    - Filter out UnitPrice <= 0.
+    - Convert InvoiceDate to datetime.
+    - Create Revenue column = Quantity * UnitPrice.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Dataset i papërpunuar (raw).
+        Raw dataset.
 
     Returns
     -------
     pd.DataFrame
-        Dataset i pastruar.
+        Cleaned dataset.
     """
     df_clean = df.copy()
 
-    # TODO: implemento hapat e pastrimit këtu
+    # 1. Handle missing CustomerID — mark as "Guest"
+    if 'Customer ID' in df_clean.columns:
+        df_clean.rename(columns={'Customer ID': 'CustomerID'}, inplace=True)
+    if 'CustomerID' in df_clean.columns:
+        df_clean['CustomerID'] = df_clean['CustomerID'].fillna('Guest')
+
+    # 2. Normalise column name: 'Price' (UCI raw format) → 'UnitPrice'
+    if 'Price' in df_clean.columns and 'UnitPrice' not in df_clean.columns:
+        df_clean.rename(columns={'Price': 'UnitPrice'}, inplace=True)
+
+    # 3. Remove duplicate rows
+    df_clean = df_clean.drop_duplicates()
+
+    # 4. Classify negative Quantity as returns (do not delete)
+    if 'Quantity' in df_clean.columns:
+        df_clean['IsReturn'] = df_clean['Quantity'] < 0
+
+    # 5. Filter out UnitPrice <= 0
+    if 'UnitPrice' in df_clean.columns:
+        df_clean = df_clean[df_clean['UnitPrice'] > 0].copy()
+
+    # 6. Convert InvoiceDate to datetime
+    if 'InvoiceDate' in df_clean.columns:
+        df_clean['InvoiceDate'] = pd.to_datetime(df_clean['InvoiceDate'])
+
+    # 7. Create Revenue column = Quantity * UnitPrice
+    if 'Quantity' in df_clean.columns and 'UnitPrice' in df_clean.columns:
+        df_clean['Revenue'] = df_clean['Quantity'] * df_clean['UnitPrice']
 
     return df_clean
