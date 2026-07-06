@@ -128,13 +128,16 @@ with st.sidebar:
 
     page = st.radio(
         "Navigate",
-        ["🏠 Home & Upload", "📈 Dashboard", "👥 Customer Analysis",
-         "🌍 Geographic", "🔁 Recommendations", "🔮 What-If Simulator"],
+        ["🏠 Data & Upload", "📊 Analytics Dashboard", "🚀 Insights & Actions"],
         label_visibility='collapsed',
     )
 
     st.markdown("---")
     st.caption("Online Retail Analytics Platform")
+<<<<<<< HEAD
+=======
+    
+>>>>>>> bbab0b2 (Reorganize app into 3 pages and comment out unused imports)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -214,16 +217,16 @@ def load_and_clean(uploaded_file) -> pd.DataFrame | None:
 def require_data() -> bool:
     """Show a prompt if no data is loaded yet. Returns True if data is ready."""
     if st.session_state['df_clean'] is None:
-        st.info("📂 Please upload a CSV file on the **🏠 Home & Upload** page first.")
+        st.info("📂 Please upload a CSV file on the **🏠 Data & Upload** page first.")
         return False
     return True
 
 
 # ══════════════════════════════════════════════════════════════════════
-# PAGE: HOME & UPLOAD
+# PAGE: DATA & UPLOAD
 # ══════════════════════════════════════════════════════════════════════
 
-if page == "🏠 Home & Upload":
+if page == "🏠 Data & Upload":
     st.title("📊 Online Retail Analytics Platform")
     st.markdown(
         "Upload your monthly sales CSV and the platform will automatically "
@@ -298,11 +301,11 @@ if page == "🏠 Home & Upload":
 
 
 # ══════════════════════════════════════════════════════════════════════
-# PAGE: DASHBOARD
+# PAGE: ANALYTICS DASHBOARD
 # ══════════════════════════════════════════════════════════════════════
 
-elif page == "📈 Dashboard":
-    st.title("📈 Sales Dashboard")
+elif page == "📊 Analytics Dashboard":
+    st.title("📊 Analytics Dashboard")
     if not require_data():
         st.stop()
 
@@ -319,7 +322,9 @@ elif page == "📈 Dashboard":
     st.markdown("---")
 
     # ── Tabs ────────────────────────────────────────────────────────
-    tab1, tab2, tab3 = st.tabs(["📅 Revenue Trends", "📦 Products", "📊 Returns"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📅 Revenue Trends", "📦 Products", "📊 Returns", "👥 Customers", "🌍 Geographic"
+    ])
 
     with tab1:
         monthly = get_monthly_revenue(df)
@@ -356,227 +361,197 @@ elif page == "📈 Dashboard":
         ret_rate = get_product_return_rate(df)
         st.plotly_chart(plot_product_return_rates(ret_rate, n=15), use_container_width=True)
 
+    with tab4:
+        with st.spinner("Computing RFM scores..."):
+            rfm = compute_rfm(df)
+            seg_summary = get_segment_summary(rfm)
 
-# ══════════════════════════════════════════════════════════════════════
-# PAGE: CUSTOMER ANALYSIS
-# ══════════════════════════════════════════════════════════════════════
+        # Segment overview
+        st.markdown("### Customer Segments")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.plotly_chart(plot_rfm_segments(seg_summary), use_container_width=True)
+        with c2:
+            st.plotly_chart(plot_segment_revenue_share(seg_summary), use_container_width=True)
 
-elif page == "👥 Customer Analysis":
-    st.title("👥 Customer Analysis")
-    if not require_data():
-        st.stop()
+        st.dataframe(seg_summary.style.format({
+            'Avg_Recency_Days': '{:.0f}',
+            'Avg_Frequency':    '{:.1f}',
+            'Avg_Revenue':      '£{:,.0f}',
+            'Total_Revenue':    '£{:,.0f}',
+        }), use_container_width=True)
 
-    df = st.session_state['df_clean']
+        st.markdown("---")
+        
+        # Sub-tabs for more details
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["💰 CLV", "🔄 New vs Returning", "⚠️ Churn Risk"])
+        
+        with sub_tab1:
+            clv = get_customer_lifetime_value(df)
+            st.plotly_chart(plot_clv_distribution(clv), use_container_width=True)
+            if not clv.empty:
+                top10_pct = clv.head(max(1, int(len(clv) * 0.1)))
+                rev_share = top10_pct['TotalRevenue'].sum() / clv['TotalRevenue'].sum() * 100
+                st.info(f"🏆 Top 10% of customers generate **{rev_share:.1f}%** of total revenue")
+            with st.expander("Full CLV table"):
+                st.dataframe(clv.head(100), use_container_width=True)
+                
+        with sub_tab2:
+            new_ret = get_new_vs_returning_customers(df)
+            st.plotly_chart(plot_new_vs_returning(new_ret), use_container_width=True)
+            
+        with sub_tab3:
+            days = st.slider("Inactive for more than (days)", 30, 180, 90, step=15)
+            churned = get_churned_customers(df, days_threshold=days)
+            st.metric(f"Customers inactive {days}+ days", f"{len(churned):,}")
+            if not churned.empty:
+                st.dataframe(churned.head(50), use_container_width=True)
+                csv_export = churned.to_csv(index=False).encode()
+                st.download_button(
+                    "⬇ Download churn list (CSV)",
+                    data=csv_export,
+                    file_name=f"churn_risk_{days}days.csv",
+                    mime="text/csv",
+                )
 
-    with st.spinner("Computing RFM scores..."):
-        rfm = compute_rfm(df)
-        seg_summary = get_segment_summary(rfm)
-
-    # Segment overview
-    st.markdown("### Customer Segments")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(plot_rfm_segments(seg_summary), use_container_width=True)
-    with c2:
-        st.plotly_chart(plot_segment_revenue_share(seg_summary), use_container_width=True)
-
-    st.dataframe(seg_summary.style.format({
-        'Avg_Recency_Days': '{:.0f}',
-        'Avg_Frequency':    '{:.1f}',
-        'Avg_Revenue':      '£{:,.0f}',
-        'Total_Revenue':    '£{:,.0f}',
-    }), use_container_width=True)
-
-    st.markdown("---")
-
-    tab1, tab2, tab3 = st.tabs(["💰 CLV", "🔄 New vs Returning", "⚠️ Churn Risk"])
-
-    with tab1:
-        clv = get_customer_lifetime_value(df)
-        st.plotly_chart(plot_clv_distribution(clv), use_container_width=True)
-        if not clv.empty:
-            top10_pct = clv.head(max(1, int(len(clv) * 0.1)))
-            rev_share = top10_pct['TotalRevenue'].sum() / clv['TotalRevenue'].sum() * 100
-            st.info(f"🏆 Top 10% of customers generate **{rev_share:.1f}%** of total revenue")
-        with st.expander("Full CLV table"):
-            st.dataframe(clv.head(100), use_container_width=True)
-
-    with tab2:
-        new_ret = get_new_vs_returning_customers(df)
-        st.plotly_chart(plot_new_vs_returning(new_ret), use_container_width=True)
-
-    with tab3:
-        days = st.slider("Inactive for more than (days)", 30, 180, 90, step=15)
-        churned = get_churned_customers(df, days_threshold=days)
-        st.metric(f"Customers inactive {days}+ days", f"{len(churned):,}")
-        if not churned.empty:
-            st.dataframe(churned.head(50), use_container_width=True)
-            csv_export = churned.to_csv(index=False).encode()
-            st.download_button(
-                "⬇ Download churn list (CSV)",
-                data=csv_export,
-                file_name=f"churn_risk_{days}days.csv",
-                mime="text/csv",
+    with tab5:
+        geo = get_country_performance(df)
+        exclude_uk = st.toggle("Exclude United Kingdom (avoids scale distortion)", value=True)
+        st.plotly_chart(plot_country_revenue(geo, exclude_uk=exclude_uk), use_container_width=True)
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            n = st.slider("Top N countries", 5, 20, 10, key="geo_n")
+            st.plotly_chart(plot_top_countries_bar(geo, n=n, exclude_uk=exclude_uk),
+                            use_container_width=True)
+        with c2:
+            st.markdown("### Country Table")
+            display_geo = geo[geo['Country'] != 'United Kingdom'] if exclude_uk else geo
+            st.dataframe(
+                display_geo.head(20).style.format({'Revenue': '£{:,.0f}'}),
+                use_container_width=True,
             )
 
 
 # ══════════════════════════════════════════════════════════════════════
-# PAGE: GEOGRAPHIC
+# PAGE: INSIGHTS & ACTIONS
 # ══════════════════════════════════════════════════════════════════════
 
-elif page == "🌍 Geographic":
-    st.title("🌍 Geographic Performance")
-    if not require_data():
-        st.stop()
-
-    df = st.session_state['df_clean']
-    geo = get_country_performance(df)
-
-    exclude_uk = st.toggle("Exclude United Kingdom (avoids scale distortion)", value=True)
-
-    st.plotly_chart(plot_country_revenue(geo, exclude_uk=exclude_uk), use_container_width=True)
-
-    c1, c2 = st.columns([2, 1])
-    with c1:
-        n = st.slider("Top N countries", 5, 20, 10, key="geo_n")
-        st.plotly_chart(plot_top_countries_bar(geo, n=n, exclude_uk=exclude_uk),
-                        use_container_width=True)
-    with c2:
-        st.markdown("### Country Table")
-        display_geo = geo[geo['Country'] != 'United Kingdom'] if exclude_uk else geo
-        st.dataframe(
-            display_geo.head(20).style.format({'Revenue': '£{:,.0f}'}),
-            use_container_width=True,
-        )
-
-
-# ══════════════════════════════════════════════════════════════════════
-# PAGE: RECOMMENDATIONS
-# ══════════════════════════════════════════════════════════════════════
-
-elif page == "🔁 Recommendations":
-    st.title("🔁 Business Recommendations")
+elif page == "🚀 Insights & Actions":
+    st.title("🚀 Insights & Actions")
     if not require_data():
         st.stop()
 
     df = st.session_state['df_clean']
 
-    with st.spinner("Generating recommendations..."):
-        recs = generate_recommendations(df)
+    action_tab1, action_tab2 = st.tabs(["🔁 Recommendations", "🔮 What-If Simulator"])
 
-    if not recs:
-        st.warning("Not enough data to generate recommendations.")
-        st.stop()
+    with action_tab1:
+        with st.spinner("Generating recommendations..."):
+            recs = generate_recommendations(df)
 
-    # Summary counts
-    high   = [r for r in recs if r['priority'] == 'High']
-    medium = [r for r in recs if r['priority'] == 'Medium']
-    low    = [r for r in recs if r['priority'] == 'Low']
+        if not recs:
+            st.warning("Not enough data to generate recommendations.")
+        else:
+            # Summary counts
+            high   = [r for r in recs if r['priority'] == 'High']
+            medium = [r for r in recs if r['priority'] == 'Medium']
+            low    = [r for r in recs if r['priority'] == 'Low']
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Recommendations", str(len(recs)))
-    c2.metric("🔴 High Priority", str(len(high)))
-    c3.metric("🟠 Medium Priority", str(len(medium)))
-    c4.metric("🟢 Low Priority", str(len(low)))
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Total Recommendations", str(len(recs)))
+            c2.metric("🔴 High Priority", str(len(high)))
+            c3.metric("🟠 Medium Priority", str(len(medium)))
+            c4.metric("🟢 Low Priority", str(len(low)))
 
-    st.markdown("---")
+            st.markdown("---")
 
-    priority_filter = st.multiselect(
-        "Filter by priority", ["High", "Medium", "Low"],
-        default=["High", "Medium", "Low"],
-    )
+            priority_filter = st.multiselect(
+                "Filter by priority", ["High", "Medium", "Low"],
+                default=["High", "Medium", "Low"],
+            )
 
-    for rec in recs:
-        if rec['priority'] not in priority_filter:
-            continue
+            for rec in recs:
+                if rec['priority'] not in priority_filter:
+                    continue
 
-        css_class = rec['priority'].lower()
-        priority_emoji = {"High": "🔴", "Medium": "🟠", "Low": "🟢"}[rec['priority']]
+                css_class = rec['priority'].lower()
+                priority_emoji = {"High": "🔴", "Medium": "🟠", "Low": "🟢"}[rec['priority']]
 
-        st.markdown(f"""
+                st.markdown(f'''
 <div class="rec-card {css_class}">
   <strong>{priority_emoji} {rec['title']}</strong>
-  &nbsp;&nbsp;<span style="color:#8D99AE; font-size:0.85rem">{rec['type']} · {rec['segment']}</span><br><br>
+  &nbsp;&nbsp;<span style="color:#8D99AE; font-size:0.85rem">{rec['type']} &middot; {rec['segment']}</span><br><br>
   {rec['message']}<br><br>
   <span style="color:#6C63FF; font-weight:600">📈 Estimated impact: ~+{rec['impact_pct']}% profit improvement</span>
 </div>
-""", unsafe_allow_html=True)
+''', unsafe_allow_html=True)
 
-    # Export recommendations as CSV
-    st.markdown("---")
-    rec_df = pd.DataFrame(recs)
-    st.download_button(
-        "⬇ Export Recommendations (CSV)",
-        data=rec_df.to_csv(index=False).encode(),
-        file_name="recommendations.csv",
-        mime="text/csv",
-    )
+            # Export recommendations as CSV
+            st.markdown("---")
+            rec_df = pd.DataFrame(recs)
+            st.download_button(
+                "⬇ Export Recommendations (CSV)",
+                data=rec_df.to_csv(index=False).encode(),
+                file_name="recommendations.csv",
+                mime="text/csv",
+            )
 
+    with action_tab2:
+        kpis = get_kpi_summary(df)
+        base_revenue = kpis.get('total_revenue', 0)
 
-# ══════════════════════════════════════════════════════════════════════
-# PAGE: WHAT-IF SIMULATOR (Step 5.1 placeholder)
-# ══════════════════════════════════════════════════════════════════════
-
-elif page == "🔮 What-If Simulator":
-    st.title("🔮 What-If Profit Simulator")
-    if not require_data():
-        st.stop()
-
-    df = st.session_state['df_clean']
-    kpis = get_kpi_summary(df)
-    base_revenue = kpis.get('total_revenue', 0)
-
-    st.markdown(
-        "Adjust the sliders below to simulate the revenue impact of business actions. "
-        "*(Logic will be fully implemented in Step 5.1)*"
-    )
-
-    st.markdown("---")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### 📊 Your Assumptions")
-        vip_retention = st.slider(
-            "🏆 Improve VIP customer retention by", 0, 30, 10, step=1,
-            format="%d%%", help="% increase in repeat purchases from Champion segment"
-        )
-        winback_rate = st.slider(
-            "🔄 Win back At-Risk customers", 0, 50, 20, step=5,
-            format="%d%%", help="% of at-risk customers you re-engage"
-        )
-        return_reduction = st.slider(
-            "📦 Reduce product returns by", 0, 50, 15, step=5,
-            format="%d%%", help="% reduction in return transaction losses"
-        )
-        new_customer_growth = st.slider(
-            "🆕 Increase new customer acquisition", 0, 30, 5, step=1,
-            format="%d%%", help="% more new customers per month"
+        st.markdown(
+            "Adjust the sliders below to simulate the revenue impact of business actions. "
+            "*(Logic will be fully implemented in Step 5.1)*"
         )
 
-    with col2:
-        st.markdown("#### 💡 Projected Impact")
-
-        # Simple projection formulas (Dev B will implement full logic in Step 5.1)
-        ret_summary = get_return_summary(df)
-        revenue_from_vip    = base_revenue * (vip_retention / 100) * 0.30  # champions ~30%
-        revenue_from_winback = base_revenue * (winback_rate / 100) * 0.10
-        revenue_from_returns = ret_summary.get('revenue_lost_from_returns', 0) * (return_reduction / 100)
-        revenue_from_new    = base_revenue * (new_customer_growth / 100) * 0.05
-        total_uplift        = revenue_from_vip + revenue_from_winback + revenue_from_returns + revenue_from_new
-
-        st.metric("Base Revenue", f"£{base_revenue:,.0f}")
-        st.metric("VIP Retention Uplift", f"+£{revenue_from_vip:,.0f}")
-        st.metric("Win-Back Revenue", f"+£{revenue_from_winback:,.0f}")
-        st.metric("Returns Savings", f"+£{revenue_from_returns:,.0f}")
-        st.metric("New Customer Revenue", f"+£{revenue_from_new:,.0f}")
         st.markdown("---")
-        st.metric("🎯 Projected Total Revenue",
-                  f"£{base_revenue + total_uplift:,.0f}",
-                  delta=f"+£{total_uplift:,.0f} (+{total_uplift/base_revenue*100:.1f}%)"
-                  if base_revenue > 0 else None)
 
-    st.caption(
-        "⚠️ These are simplified estimates. Step 5.1 will connect these to the full "
-        "RFM history and `kpi_history` MongoDB collection for accurate projections."
-    )
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 📊 Your Assumptions")
+            vip_retention = st.slider(
+                "🏆 Improve VIP customer retention by", 0, 30, 10, step=1,
+                format="%d%%", help="% increase in repeat purchases from Champion segment"
+            )
+            winback_rate = st.slider(
+                "🔄 Win back At-Risk customers", 0, 50, 20, step=5,
+                format="%d%%", help="% of at-risk customers you re-engage"
+            )
+            return_reduction = st.slider(
+                "📦 Reduce product returns by", 0, 50, 15, step=5,
+                format="%d%%", help="% reduction in return transaction losses"
+            )
+            new_customer_growth = st.slider(
+                "🆕 Increase new customer acquisition", 0, 30, 5, step=1,
+                format="%d%%", help="% more new customers per month"
+            )
+
+        with col2:
+            st.markdown("#### 💡 Projected Impact")
+
+            # Simple projection formulas (Dev B will implement full logic in Step 5.1)
+            ret_summary = get_return_summary(df)
+            revenue_from_vip    = base_revenue * (vip_retention / 100) * 0.30  # champions ~30%
+            revenue_from_winback = base_revenue * (winback_rate / 100) * 0.10
+            revenue_from_returns = ret_summary.get('revenue_lost_from_returns', 0) * (return_reduction / 100)
+            revenue_from_new    = base_revenue * (new_customer_growth / 100) * 0.05
+            total_uplift        = revenue_from_vip + revenue_from_winback + revenue_from_returns + revenue_from_new
+
+            st.metric("Base Revenue", f"£{base_revenue:,.0f}")
+            st.metric("VIP Retention Uplift", f"+£{revenue_from_vip:,.0f}")
+            st.metric("Win-Back Revenue", f"+£{revenue_from_winback:,.0f}")
+            st.metric("Returns Savings", f"+£{revenue_from_returns:,.0f}")
+            st.metric("New Customer Revenue", f"+£{revenue_from_new:,.0f}")
+            st.markdown("---")
+            st.metric("🎯 Projected Total Revenue",
+                      f"£{base_revenue + total_uplift:,.0f}",
+                      delta=f"+£{total_uplift:,.0f} (+{total_uplift/base_revenue*100:.1f}%)"
+                      if base_revenue > 0 else None)
+
+        st.caption(
+            "⚠️ These are simplified estimates. Step 5.1 will connect these to the full "
+            "RFM history and `kpi_history` MongoDB collection for accurate projections."
+        )
+
